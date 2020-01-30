@@ -1,0 +1,52 @@
+{
+  "name": "moleculer-bulmq",
+  "version": "0.0.1",
+  "description": "Moleculer service for bulmq",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "ci": "jest --watch",
+    "test": "jest --coverage",
+    "lint": "eslint --ext=.js src test index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hugome/moleculer-bullmq.git"
+  },
+  "keywords": [
+    "moleculer",
+    "queue",
+    "bullmq"
+  ],
+  "author": "Hugo Meyronneinc <hugo@yoursoft.run>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Hugome/moleculer-bullmq/issues"
+  },
+  "homepage": "https://github.com/Hugome/moleculer-bullmq#readme",
+  "jest": {
+    "testEnvironment": "node",
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "/test/"
+    ]
+  },
+  "engines": {
+    "node": ">= 10.x.x"
+  },
+  "dependencies": {
+    "bullmq": "^1.6.7"
+  },
+  "devDependencies": {
+    "@types/jest": "^25.1.1",
+    "coveralls": "^3.0.9",
+    "eslint": "^6.8.0",
+    "moleculer-repl": "^0.6.2",
+    "eslint-plugin-jest": "^23.6.0",
+    "jest": "^25.1.0",
+    "jest-cli": "^25.1.0",
+    "moleculer": "^0.14.0-rc2"
+  }
+}
