@@ -1,7 +1,7 @@
 {
-  "name": "moleculer-bulmq",
-  "version": "0.0.1",
-  "description": "Moleculer service for bulmq",
+  "name": "moleculer-bullmq",
+  "version": "0.0.2",
+  "description": "Moleculer service for bullmq",
   "main": "index.js",
   "directories": {
     "test": "test"
