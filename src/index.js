@@ -33,16 +33,30 @@ module.exports = {
         this.broker.broadcastLocal(event, params)
       }
       this.$worker.on('waiting', ({ id, name }) => evt(name, 'waiting', { id }))
-      this.$worker.on('drained', ({ id }) => evt(undefined, 'drained', { id }))
+      this.$worker.on('drained', () => evt('drained'))
       this.$worker.on('failed', ({ id, name }) => evt(name, 'failed', { id }))
       this.$worker.on('progress', ({ id, name }, progress) => evt(name, 'progress', { id, progress }))
       this.$worker.on('completed', ({ id, name }) => evt(name, 'completed', { id }))
     }
   },
   methods: {
+    $resolve(name) {
+      return this.$queueResolved[name] || (this.$queueResolved[name] = new Queue(this.name, { connection: this.broker.cacher.client }))
+    },
     queue(name, action, params) {
-      const queue = this.$queueResolved[name] || (this.$queueResolved[name] = new Queue(this.name, { connection: this.broker.cacher.client }))
-      return queue.add(action, { params, meta: this.currentContext.meta })
+      if (arguments.length <= 2) {
+        action = name
+        params = action
+        name = this.name
+      }
+      return this.$resolve(name).add(action, { params, meta: this.currentContext.meta })
+    },
+    job(name, id) {
+      if (arguments.length === 1) {
+        id = name
+        name = this.name
+      }
+      return this.$resolve(name).getJob(id)
     }
   }
 }
