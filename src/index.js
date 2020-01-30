@@ -41,9 +41,6 @@ module.exports = {
   },
   methods: {
     queue(name, action, params) {
-      if (params === undefined && action === undefined) {
-        name = this.name
-      }
       const queue = this.$queueResolved[name] || (this.$queueResolved[name] = new Queue(this.name, { connection: this.broker.cacher.client }))
       return queue.add(action, { params, meta: this.currentContext.meta })
     }
