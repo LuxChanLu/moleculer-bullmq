@@ -28,8 +28,7 @@ module.exports = {
         }
       }, { ...this.settings.bullmq.worker, connection: this.broker.cacher.client })
       this.$worker.on('waiting', ({ id, name }) => this.broker.emit(`${this.name}.${name}.waiting`, { id }))
-      this.$worker.on('drained', ({ id, name }) => this.broker.emit(`${this.name}.${name}.drained`, { id }))
-      this.$worker.on('completed', ({ id, name }) => this.broker.emit(`${this.name}.${name}.completed`, { id }))
+      this.$worker.on('drained', () => this.broker.emit(`${this.name}.drained`))
       this.$worker.on('failed', ({ id, name }) => this.broker.emit(`${this.name}.${name}.failed`, { id }))
       this.$worker.on('progress', ({ id, name }, progress) => this.broker.emit(`${this.name}.${name}.progress`, { id, progress }))
       this.$worker.on('completed', ({ id, name }) => this.broker.emit(`${this.name}.${name}.completed`, { id }))
