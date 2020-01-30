@@ -22,6 +22,9 @@ module.exports = {
       this.$worker = new Worker(this.name, async job => {
         if (this.$queues.includes(job.name)) {
           const { params, meta } = job.data
+          if (!this.broker.registry.hasService(this.name)) {
+            await this.broker.waitForServices(this.name)
+          }
           const ctx = Context.create(this.broker, undefined, params, { meta, timeout: 0 })
           ctx.locals.job = job
           await ctx.call(`${this.name}.${job.name}`, params)
@@ -45,8 +48,8 @@ module.exports = {
     },
     queue(name, action, params) {
       if (arguments.length <= 2) {
-        action = name
         params = action
+        action = name
         name = this.name
       }
       return this.$resolve(name).add(action, { params, meta: this.currentContext.meta })
