@@ -27,15 +27,23 @@ module.exports = {
           await ctx.call(`${this.name}.${job.name}`, params)
         }
       }, { ...this.settings.bullmq.worker, connection: this.broker.cacher.client })
-      this.$worker.on('waiting', ({ id, name }) => this.broker.emit(`${this.name}.${name}.waiting`, { id }))
-      this.$worker.on('drained', () => this.broker.emit(`${this.name}.drained`))
-      this.$worker.on('failed', ({ id, name }) => this.broker.emit(`${this.name}.${name}.failed`, { id }))
-      this.$worker.on('progress', ({ id, name }, progress) => this.broker.emit(`${this.name}.${name}.progress`, { id, progress }))
-      this.$worker.on('completed', ({ id, name }) => this.broker.emit(`${this.name}.${name}.completed`, { id }))
+      const evt = (name, type, params) => {
+        const event = [name, type].filter(Boolean).join('.')
+        this.broker.emit(`${this.name}.${event}`, params)
+        this.broker.broadcastLocal(event, params)
+      }
+      this.$worker.on('waiting', ({ id, name }) => evt(name, 'waiting', { id }))
+      this.$worker.on('drained', ({ id }) => evt(undefined, 'drained', { id }))
+      this.$worker.on('failed', ({ id, name }) => evt(name, 'failed', { id }))
+      this.$worker.on('progress', ({ id, name }, progress) => evt(name, 'progress', { id, progress }))
+      this.$worker.on('completed', ({ id, name }) => evt(name, 'completed', { id }))
     }
   },
   methods: {
     queue(name, action, params) {
+      if (params === undefined && action === undefined) {
+        name = this.name
+      }
       const queue = this.$queueResolved[name] || (this.$queueResolved[name] = new Queue(this.name, { connection: this.broker.cacher.client }))
       return queue.add(action, { params, meta: this.currentContext.meta })
     }
