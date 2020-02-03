@@ -16,7 +16,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - run: npm ci
-    - run: npm test
+    - run: npm test -- --forceExit
       env:
         CI: true
 
@@ -35,7 +35,7 @@ jobs:
     - name: Publish coverage
       run: |
         npm ci
-        npm run test -- --coverage
+        npm run test -- --forceExit --coverage
 
     - name: Coveralls Parallel
       uses: coverallsapp/github-action@master
