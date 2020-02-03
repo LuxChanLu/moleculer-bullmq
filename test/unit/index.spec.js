@@ -13,7 +13,7 @@ const BullMqMixin = require('../../src/index.js')
 describe('Mixin', () => {
   const broker = new ServiceBroker({
     logger: false,
-    cacher: 'redis://localhost'
+    cacher: 'redis://localhost/0'
   })
   const service = broker.createService({
     name: 'jobs',

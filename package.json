@@ -44,6 +44,7 @@
     "coveralls": "^3.0.9",
     "eslint": "^6.8.0",
     "eslint-plugin-jest": "^23.6.0",
+    "ioredis": "^4.14.1",
     "jest": "^25.1.0",
     "jest-cli": "^25.1.0",
     "moleculer": "^0.14.0-rc2",
