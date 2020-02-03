@@ -30,8 +30,8 @@ module.exports = {
         const { params, meta } = job.data
         meta.job = { id: job.id, queue: this.name }
         return Context.create(this.broker, undefined, params, { meta, timeout: 0 }).call(`${this.name}.${job.name}`, params)
-      }, { ...this.settings.bullmq.worker, client: this.broker.cacher.client })
-      this.$events = new QueueEvents(this.name, { client: this.broker.cacher.client })
+      }, { ...this.settings.bullmq.worker, connection: this.broker.cacher.client })
+      this.$events = new QueueEvents(this.name, { connection: this.broker.cacher.client })
       this.$events.on('active', ({ jobId }) => this.$transformEvent(jobId, 'active'))
       this.$events.on('removed', ({ jobId }) => this.$transformEvent(jobId, 'removed'))
       this.$events.on('progress', ({ jobId, data }) => this.$transformEvent(jobId, 'progress', { progress: data }))
@@ -56,7 +56,7 @@ module.exports = {
   methods: {
     $resolve(name) {
       if (!this.$queueResolved[name]) {
-        this.$queueResolved[name] = new Queue(name, { client: this.broker.cacher.client })
+        this.$queueResolved[name] = new Queue(name, { connection: this.broker.cacher.client })
       }
       return this.$queueResolved[name]
     },

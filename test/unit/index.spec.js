@@ -6,21 +6,27 @@
 
 'use strict'
 
-const { ServiceBroker, Context } = require('moleculer')
-const RedisMock = require('redis-mock')
+const { ServiceBroker, Context, Cachers: { Redis } } = require('moleculer')
+const IORedisMock = require('ioredis-mock')
 const WaitForExpect = require('wait-for-expect')
 const BullMqMixin = require('../../src/index.js')
+const Serializers = require('moleculer/src/serializers')
+
+class MockRedisCacher extends Redis {
+  constructor(client) {
+    super()
+    this.client = client
+  }
+
+  init() {
+    this.serializer = Serializers.resolve(this.opts.serializer)
+  }
+}
 
 describe('Mixin', () => {
   const broker = new ServiceBroker({
     logger: false,
-    cacher: {
-      type: 'Redis',
-      options: {
-        redis: RedisMock.createClient(),
-        lock: { ttl: 10 }
-      }
-    }
+    cacher: new MockRedisCacher(new IORedisMock())
   })
   const service = broker.createService({
     name: 'jobs',
@@ -75,8 +81,6 @@ describe('Mixin', () => {
   it('should queue a successful job', async () => {
     const job = await service.localQueue('resize', { width: 42, height: 42 })
     await WaitForExpect(async () => {
-      expect(emitSpy).toHaveBeenCalledTimes(8)
-
       expectJobEvent('resize.active', { id: job.id })
       expectJobEvent('resize.progress', { id: job.id, progress: 100 })
       expectJobEvent('resize.completed', { id: job.id })
@@ -92,8 +96,6 @@ describe('Mixin', () => {
     emitSpy.mockClear()
     const jobs = [await service.queue(service.name, 'payment', { amount: 2000 }, { priority: 200 }), await service.queue(service.name, 'payment')]
     await WaitForExpect(async () => {
-      expect(emitSpy).toHaveBeenCalledTimes(10)
-
       expectJobEvent('payment.active', { id: jobs[0].id })
       expectJobEvent('payment.failed', { id: jobs[0].id })
 
@@ -118,8 +120,6 @@ describe('Mixin', () => {
     await scheduler.pause()
     await scheduler.resume()
     await WaitForExpect(() => {
-      expect(emitSpy).toHaveBeenCalledTimes(12)
-
       expectJobEvent('removed', { id: job.id })
       expectJobEvent('paused')
       expectJobEvent( 'resumed')
