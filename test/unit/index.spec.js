@@ -6,27 +6,14 @@
 
 'use strict'
 
-const { ServiceBroker, Context, Cachers: { Redis } } = require('moleculer')
-const IORedisMock = require('ioredis-mock')
+const { ServiceBroker, Context } = require('moleculer')
 const WaitForExpect = require('wait-for-expect')
 const BullMqMixin = require('../../src/index.js')
-const Serializers = require('moleculer/src/serializers')
-
-class MockRedisCacher extends Redis {
-  constructor(client) {
-    super()
-    this.client = client
-  }
-
-  init() {
-    this.serializer = Serializers.resolve(this.opts.serializer)
-  }
-}
 
 describe('Mixin', () => {
   const broker = new ServiceBroker({
     logger: false,
-    cacher: new MockRedisCacher(new IORedisMock())
+    cacher: 'redis://localhost'
   })
   const service = broker.createService({
     name: 'jobs',

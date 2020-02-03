@@ -47,8 +47,6 @@
     "jest": "^25.1.0",
     "jest-cli": "^25.1.0",
     "moleculer": "^0.14.0-rc2",
-    "moleculer-repl": "^0.6.2",
-    "wait-for-expect": "^3.0.1",
-    "ioredis-mock": "^4.19.0"
+    "wait-for-expect": "^3.0.1"
   }
 }
