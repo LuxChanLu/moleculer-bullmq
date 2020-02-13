@@ -7,10 +7,10 @@
 [![Downloads](https://img.shields.io/npm/dm/moleculer-bullmq.svg)](https://www.npmjs.com/package/moleculer-bullmq)
 
 ## How to create job
-You just need to add the `BullMqMixin` and add a `queue` attribute to you action.  
-This action will be call with the params & meta of the scheduler.  
-The return of the action will be the job result.  
-The mixin will add the BullMq `job` into `locals`  
+You just need to add the `BullMqMixin` and add a `queue` attribute to you action.
+This action will be call with the params & meta of the scheduler.
+The return of the action will be the job result.
+The mixin will add the BullMq `job` into `locals`
 ```js
 module.exports = {
     name: 'jobs',
@@ -44,7 +44,7 @@ module.exports = {
       'resize.async': {
         async handler(ctx) {
           ctx.meta.user = 'Bob de glace'
-          const job = await this.queue('jobs', 'resize', { width: 42, height: 42 }, { priority: 10 })
+          const job = await this.queue(ctx, 'jobs', 'resize', { width: 42, height: 42 }, { priority: 10 })
         }
       }
     }
@@ -69,7 +69,7 @@ module.exports = {
       'resize.async': {
         async handler(ctx) {
           ctx.meta.user = 'Bob de glace'
-          const job = await this.localQueue('resize', { width: 42, height: 42 }, { priority: 10 })
+          const job = await this.localQueue(ctx, 'resize', { width: 42, height: 42 }, { priority: 10 })
         }
       }
     }

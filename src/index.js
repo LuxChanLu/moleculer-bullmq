@@ -77,11 +77,11 @@ module.exports = {
         return this.$worker.resume()
       }
     },
-    queue(name, action, params, options) {
-      return this.$resolve(name).add(action, { params, meta: {} }, options)
+    queue(ctx, name, action, params, options) {
+      return this.$resolve(name).add(action, { params, meta: ctx.meta }, options)
     },
-    localQueue(action, params, options) {
-      return this.queue(this.name, action, params, options)
+    localQueue(ctx, action, params, options) {
+      return this.queue(ctx, this.name, action, params, options)
     },
     job(name, id) {
       if (arguments.length === 1) {

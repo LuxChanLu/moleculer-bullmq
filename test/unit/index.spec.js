@@ -43,8 +43,8 @@ describe('Mixin', () => {
         }
       },
       'report.generate': {
-        async handler() {
-          const job = await this.localQueue('resize')
+        async handler(ctx) {
+          const job = await this.localQueue(ctx, 'resize')
           await job.remove()
           return job
         }
@@ -66,7 +66,7 @@ describe('Mixin', () => {
   it('should have a bull worker', () => expect(service.$worker).toBeDefined())
 
   it('should queue a successful job', async () => {
-    const job = await service.localQueue('resize', { width: 42, height: 42 })
+    const job = await service.localQueue(ctx, 'resize', { width: 42, height: 42 })
     await WaitForExpect(async () => {
       expectJobEvent('resize.active', { id: job.id })
       expectJobEvent('resize.progress', { id: job.id, progress: 100 })
@@ -81,7 +81,7 @@ describe('Mixin', () => {
 
   it('should queue a failed job', async () => {
     emitSpy.mockClear()
-    const jobs = [await service.queue(service.name, 'payment', { amount: 2000 }, { priority: 200 }), await service.queue(service.name, 'payment')]
+    const jobs = [await service.queue(ctx, service.name, 'payment', { amount: 2000 }, { priority: 200 }), await service.queue(ctx, service.name, 'payment')]
     await WaitForExpect(async () => {
       expectJobEvent('payment.active', { id: jobs[0].id })
       expectJobEvent('payment.failed', { id: jobs[0].id })
