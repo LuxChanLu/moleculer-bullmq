@@ -78,7 +78,7 @@ module.exports = {
       }
     },
     queue(name, action, params, options) {
-      return this.$resolve(name).add(action, { params, meta: this.currentContext.meta }, options)
+      return this.$resolve(name).add(action, { params, meta: {} }, options)
     },
     localQueue(action, params, options) {
       return this.queue(this.name, action, params, options)
@@ -94,7 +94,6 @@ module.exports = {
       ctx.locals.job = ctx.meta && ctx.meta.job ? await this.job(ctx.meta.job.queue, ctx.meta.job.id) : undefined
     },
     async $transformEvent (id, type, params) {
-      const ctx = this.currentContext
       const event = arguments.length === 1 ? [id] : [type]
       if (arguments.length >= 2 && id) {
         const job = await this.job(id)
@@ -105,8 +104,8 @@ module.exports = {
         params.id = id
       }
       const name = event.join('.')
-      ctx.emit(`${this.name}.${name}`, params)
-      ctx.emit(name, params, this.name)
+      this.broker.emit(`${this.name}.${name}`, params)
+      this.broker.emit(name, params, this.name)
     }
   }
 }
