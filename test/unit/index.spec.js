@@ -108,6 +108,7 @@ describe('Mixin', () => {
   it('should emit misc events', async () => {
     emitSpy.mockClear()
     const job = await ctx.call('jobs.report.generate')
+    expect(job).toBeDefined()
     await service.pause()
     await service.resume()
     await scheduler.pause(service.name)
