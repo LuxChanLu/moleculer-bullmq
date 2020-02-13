@@ -27,7 +27,8 @@ describe('Mixin', () => {
     mixins: [BullMqMixin],
     settings: {
       bullmq: {
-        worker: { concurrency: 1 }
+        worker: { concurrency: 1 },
+        client: RedisMock.createClient()
       }
     },
     actions: {

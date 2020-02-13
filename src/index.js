@@ -24,7 +24,7 @@ module.exports = {
   created() {
     this.$queues = Object.entries(this.schema.actions || {}).filter(([, { queue }]) => queue).map(([name]) => name)
     this.$queueResolved = {}
-    this.$client = this.broker.cacher.client ? this.broker.cacher.client : new IORedis(this.settings.bullmq.client)
+    this.$client = this.settings.bullmq.client ? new IORedis(this.settings.bullmq.client) : this.broker.cacher.client
   },
   started() {
     if (this.$queues.length > 0) {
@@ -56,9 +56,6 @@ module.exports = {
     await Promise.all(Object.values(this.$queueResolved).map(queue => queue.close()))
   },
   methods: {
-    $connection() {
-      return this.settings.bullmq.connection || this.broker.cacher.client
-    },
     $resolve(name) {
       if (!this.$queueResolved[name]) {
         this.$queueResolved[name] = new Queue(name, { client: this.$client })
