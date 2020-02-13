@@ -14,13 +14,7 @@ const BullMqMixin = require('../../src/index.js')
 describe('Mixin', () => {
   const broker = new ServiceBroker({
     logger: false,
-    cacher: {
-      type: 'Redis',
-      options: {
-        redis: RedisMock.createClient(),
-        lock: { ttl: 10 }
-      }
-    }
+    cacher: 'redis://localhost/0'
   })
   const service = broker.createService({
     name: 'jobs',

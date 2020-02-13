@@ -11,6 +11,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - uses: zhulik/redis-action@1.1.0
+      with:
+        redis version: '6.0-rc-alpine'
+        number of databases: 1
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
       with:
@@ -26,6 +30,10 @@ jobs:
     steps:
 
     - uses: actions/checkout@v2
+    - uses: zhulik/redis-action@1.1.0
+      with:
+        redis version: '6.0-rc-alpine'
+        number of databases: 1
 
     - name: Use Node.js 13.x
       uses: actions/setup-node@v1
