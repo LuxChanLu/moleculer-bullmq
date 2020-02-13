@@ -13,66 +13,78 @@ The return of the action will be the job result.
 The mixin will add the BullMq `job` into `locals`  
 ```js
 module.exports = {
-    name: 'jobs',
-    mixins: [BullMqMixin],
-    settings: {
-      bullmq: {
-        worker: { concurrency: 50 }
-      }
-    },
-    actions: {
-      resize: {
-        queue: true,
-        params: { width: 'number', height: 'number' },
-        async handler(ctx) {
-          const { width, height } = ctx.params
-          const { user } = ctx.meta
-          ctx.locals.job.updateProgress(100)
-          return { user, size: width * height, job: ctx.locals.job.id }
-        }
+  name: 'jobs',
+  mixins: [BullMqMixin],
+  settings: {
+    bullmq: {
+      worker: { concurrency: 50 }
+    }
+  },
+  actions: {
+    resize: {
+      queue: true,
+      params: { width: 'number', height: 'number' },
+      async handler(ctx) {
+        const { width, height } = ctx.params
+        const { user } = ctx.meta
+        ctx.locals.job.updateProgress(100)
+        return { user, size: width * height, job: ctx.locals.job.id }
       }
     }
   }
+}
 ```
-## How to queue job
-You can use the `queue` method, with four parameters : Queue name, Action name, Parameters, Job options
+By default it use the redis cacher, but you can specify a custom client :
 ```js
 module.exports = {
-    name: 'my.service',
-    mixins: [BullMqMixin],
-    actions: {
-      'resize.async': {
-        async handler(ctx) {
-          ctx.meta.user = 'Bob de glace'
-          const job = await this.queue(ctx, 'jobs', 'resize', { width: 42, height: 42 }, { priority: 10 })
-        }
+  name: 'jobs',
+  mixins: [BullMqMixin],
+  settings: {
+    bullmq: {
+      client: 'redis://:authpassword@127.0.0.1:6380/4'
+    }
+  }
+}
+```
+## How to queue job
+You can use the `queue` method, with five parameters : Current context, Queue name, Action name, Parameters, Job options
+```js
+module.exports = {
+  name: 'my.service',
+  mixins: [BullMqMixin],
+  actions: {
+    'resize.async': {
+      async handler(ctx) {
+        ctx.meta.user = 'Bob de glace'
+        const job = await this.queue(ctx, 'jobs', 'resize', { width: 42, height: 42 }, { priority: 10 })
       }
     }
   }
+}
 ```
 If your in the same service as your scheduling action, you can omit the queue name with the `localQueue` method
 ```js
 module.exports = {
-    name: 'my.service',
-    mixins: [BullMqMixin],
-    actions: {
-      resize: {
-        queue: true,
-        params: { width: 'number', height: 'number' },
-        async handler(ctx) {
-          const { width, height } = ctx.params
-          const { user } = ctx.meta
-          ctx.locals.job.updateProgress(100)
-          return { user, size: width * height, job: ctx.locals.job.id }
-        }
-      },
-      'resize.async': {
-        async handler(ctx) {
-          ctx.meta.user = 'Bob de glace'
-          const job = await this.localQueue(ctx, 'resize', { width: 42, height: 42 }, { priority: 10 })
-        }
+  name: 'my.service',
+  mixins: [BullMqMixin],
+  actions: {
+    resize: {
+      queue: true,
+      params: { width: 'number', height: 'number' },
+      async handler(ctx) {
+        const { width, height } = ctx.params
+        const { user } = ctx.meta
+        ctx.locals.job.updateProgress(100)
+        return { user, size: width * height, job: ctx.locals.job.id }
+      }
+    },
+    'resize.async': {
+      async handler(ctx) {
+        ctx.meta.user = 'Bob de glace'
+        const job = await this.localQueue(ctx, 'resize', { width: 42, height: 42 }, { priority: 10 })
       }
     }
   }
+}
 ```
 

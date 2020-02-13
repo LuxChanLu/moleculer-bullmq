@@ -37,7 +37,8 @@
     "node": ">= 10.x.x"
   },
   "dependencies": {
-    "bullmq": "^1.6.7"
+    "bullmq": "^1.6.7",
+    "redis-mock": "^0.48.0"
   },
   "devDependencies": {
     "@types/jest": "^25.1.2",

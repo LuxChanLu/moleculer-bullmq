@@ -8,6 +8,7 @@
 
 const { Context } = require('moleculer')
 const { Worker, Queue, QueueEvents } = require('bullmq')
+const IORedis = require('ioredis')
 
 module.exports = {
   settings: {
@@ -23,6 +24,7 @@ module.exports = {
   created() {
     this.$queues = Object.entries(this.schema.actions || {}).filter(([, { queue }]) => queue).map(([name]) => name)
     this.$queueResolved = {}
+    this.$client = this.broker.cacher.client ? this.broker.cacher.client : new IORedis(this.settings.bullmq.client)
   },
   started() {
     if (this.$queues.length > 0) {
@@ -30,8 +32,8 @@ module.exports = {
         const { params, meta } = job.data
         meta.job = { id: job.id, queue: this.name }
         return Context.create(this.broker, undefined, params, { meta, timeout: 0 }).call(`${this.name}.${job.name}`, params)
-      }, { ...this.settings.bullmq.worker, connection: this.$connection() })
-      this.$events = new QueueEvents(this.name, { connection: this.$connection() })
+      }, { ...this.settings.bullmq.worker, client: this.$client })
+      this.$events = new QueueEvents(this.name, { client: this.$client })
       this.$events.on('active', ({ jobId }) => this.$transformEvent(jobId, 'active'))
       this.$events.on('removed', ({ jobId }) => this.$transformEvent(jobId, 'removed'))
       this.$events.on('progress', ({ jobId, data }) => this.$transformEvent(jobId, 'progress', { progress: data }))
@@ -59,7 +61,7 @@ module.exports = {
     },
     $resolve(name) {
       if (!this.$queueResolved[name]) {
-        this.$queueResolved[name] = new Queue(name, { connection: this.$connection() })
+        this.$queueResolved[name] = new Queue(name, { client: this.$client })
       }
       return this.$queueResolved[name]
     },

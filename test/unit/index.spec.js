@@ -7,13 +7,20 @@
 'use strict'
 
 const { ServiceBroker, Context } = require('moleculer')
+const RedisMock = require('redis-mock')
 const WaitForExpect = require('wait-for-expect')
 const BullMqMixin = require('../../src/index.js')
 
 describe('Mixin', () => {
   const broker = new ServiceBroker({
     logger: false,
-    cacher: 'redis://localhost/0'
+    cacher: {
+      type: 'Redis',
+      options: {
+        redis: RedisMock.createClient(),
+        lock: { ttl: 10 }
+      }
+    }
   })
   const service = broker.createService({
     name: 'jobs',
@@ -52,7 +59,7 @@ describe('Mixin', () => {
     }
   })
   const ctx = service.currentContext = Context.create(broker, undefined, undefined, { meta: { bucket: 'NGNLS2' } })
-  const emitSpy = jest.spyOn(ctx, 'emit')
+  const emitSpy = jest.spyOn(broker, 'emit')
   const scheduler = broker.createService({ name: 'scheduler', mixins: [BullMqMixin] }) // Try without actions
 
   const expectJobEvent = (name, params) => {
