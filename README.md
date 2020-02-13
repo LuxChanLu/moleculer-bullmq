@@ -7,10 +7,10 @@
 [![Downloads](https://img.shields.io/npm/dm/moleculer-bullmq.svg)](https://www.npmjs.com/package/moleculer-bullmq)
 
 ## How to create job
-You just need to add the `BullMqMixin` and add a `queue` attribute to you action.
-This action will be call with the params & meta of the scheduler.
-The return of the action will be the job result.
-The mixin will add the BullMq `job` into `locals`
+You just need to add the `BullMqMixin` and add a `queue` attribute to you action.  
+This action will be call with the params & meta of the scheduler.  
+The return of the action will be the job result.  
+The mixin will add the BullMq `job` into `locals`  
 ```js
 module.exports = {
     name: 'jobs',
