@@ -13,7 +13,8 @@ const IORedis = require('ioredis')
 module.exports = {
   settings: {
     bullmq: {
-      worker: {}
+      worker: {},
+      passContext: false
     }
   },
   hooks: {
@@ -29,9 +30,9 @@ module.exports = {
   started() {
     if (this.$queues.length > 0) {
       this.$worker = new Worker(this.name, async job => {
-        const { params, meta } = job.data
+        const { params, meta, parentCtx } = job.data
         meta.job = { id: job.id, queue: this.name }
-        return Context.create(this.broker, undefined, params, { meta, timeout: 0 }).call(`${this.name}.${job.name}`, params)
+        return Context.create(this.broker, undefined, params, { meta, timeout: 0, parentCtx }).call(`${this.name}.${job.name}`, params)
       }, { ...this.settings.bullmq.worker, client: this.$client })
       this.$events = new QueueEvents(this.name, { client: this.$client })
       this.$events.on('active', ({ jobId }) => this.$transformEvent(jobId, 'active'))
@@ -77,7 +78,7 @@ module.exports = {
       }
     },
     queue(ctx, name, action, params, options) {
-      return this.$resolve(name).add(action, { params, meta: ctx.meta }, options)
+      return this.$resolve(name).add(action, { params, meta: ctx.meta, parentCtx: this.settings.bullmq.passContext ? ctx: undefined }, options)
     },
     localQueue(ctx, action, params, options) {
       return this.queue(ctx, this.name, action, params, options)
