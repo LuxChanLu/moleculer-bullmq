@@ -47,7 +47,6 @@ module.exports = {
 }
 The `client` option goes to the `IORedis` constructor.
 ```
-
 ## How to queue job
 You can use the `queue` method, with five parameters : Current context, Queue name, Action name, Parameters, Job options
 ```js
