@@ -58,8 +58,8 @@ describe('Mixin', () => {
   const scheduler = broker.createService({ name: 'scheduler', mixins: [BullMqMixin] }) // Try without actions
 
   const expectJobEvent = (name, params) => {
-    expect(emitSpy.mock.calls).toContainEqual([`${service.name}.${name}`, params])
-    expect(emitSpy.mock.calls).toContainEqual([name, params, service.name])
+    expect(emitSpy.mock.calls).toContainEqual([`${service.name}.${name}`, params, expect.any(Object)])
+    expect(emitSpy.mock.calls).toContainEqual([name, params, service.name, expect.any(Object)])
   }
 
   beforeAll(() => broker.start())

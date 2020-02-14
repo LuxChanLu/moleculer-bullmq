@@ -6,7 +6,6 @@
 
 'use strict'
 
-const { Context } = require('moleculer')
 const { Worker, Queue, QueueEvents } = require('bullmq')
 const IORedis = require('ioredis')
 
@@ -29,9 +28,9 @@ module.exports = {
   started() {
     if (this.$queues.length > 0) {
       this.$worker = new Worker(this.name, async job => {
-        const { params, meta } = job.data
+        const { params, meta, parentSpan } = job.data
         meta.job = { id: job.id, queue: this.name }
-        return Context.create(this.broker, undefined, params, { meta, timeout: 0 }).call(`${this.name}.${job.name}`, params)
+        return this.broker.call(`${this.name}.${job.name}`, params, { meta, timeout: 0, parentSpan })
       }, { ...this.settings.bullmq.worker, client: this.$client })
       this.$events = new QueueEvents(this.name, { client: this.$client })
       this.$events.on('active', ({ jobId }) => this.$transformEvent(jobId, 'active'))
@@ -77,7 +76,11 @@ module.exports = {
       }
     },
     queue(ctx, name, action, params, options) {
-      return this.$resolve(name).add(action, { params, meta: ctx.meta }, options)
+      return this.$resolve(name).add(action, {
+        params, meta: ctx.meta, parentSpan: {
+          id: ctx.parentID, traceID: ctx.requestID, sampled: ctx.tracing
+        }
+      }, options)
     },
     localQueue(ctx, action, params, options) {
       return this.queue(ctx, this.name, action, params, options)
@@ -94,17 +97,22 @@ module.exports = {
     },
     async $transformEvent (id, type, params) {
       const event = arguments.length === 1 ? [id] : [type]
+      let emitOpts = { meta: { job: { queue: this.name } } }
       if (arguments.length >= 2 && id) {
         const job = await this.job(id)
         if (job && job.name) {
           event.unshift(job.name)
+          const { meta, parentSpan } = job.data
+          meta.job = { id: job.id, queue: this.name }
+          emitOpts = { meta, parentSpan }
         }
         params = params || {}
         params.id = id
       }
       const name = event.join('.')
-      this.broker.emit(`${this.name}.${name}`, params)
-      this.broker.emit(name, params, this.name)
+      
+      this.broker.emit(`${this.name}.${name}`, params, emitOpts)
+      this.broker.emit(name, params, this.name, { ...emitOpts, groups: this.name})
     }
   }
 }
