@@ -12,8 +12,7 @@ const IORedis = require('ioredis')
 module.exports = {
   settings: {
     bullmq: {
-      worker: {},
-      passContext: false
+      worker: {}
     }
   },
   hooks: {
@@ -29,9 +28,9 @@ module.exports = {
   started() {
     if (this.$queues.length > 0) {
       this.$worker = new Worker(this.name, async job => {
-        const { params, meta, parentCtx } = job.data
+        const { params, meta, parentSpan } = job.data
         meta.job = { id: job.id, queue: this.name }
-        return this.broker.call(`${this.name}.${job.name}`, params, { meta, timeout: 0, parentCtx })
+        return this.broker.call(`${this.name}.${job.name}`, params, { meta, timeout: 0, parentSpan })
       }, { ...this.settings.bullmq.worker, client: this.$client })
       this.$events = new QueueEvents(this.name, { client: this.$client })
       this.$events.on('active', ({ jobId }) => this.$transformEvent(jobId, 'active'))
@@ -77,7 +76,11 @@ module.exports = {
       }
     },
     queue(ctx, name, action, params, options) {
-      return this.$resolve(name).add(action, { params, meta: ctx.meta, parentCtx: this.settings.bullmq.passContext ? ctx: undefined }, options)
+      return this.$resolve(name).add(action, {
+        params, meta: ctx.meta, parentSpan: {
+          id: ctx.parentID, traceID: ctx.requestID, sampled: ctx.tracing
+        }
+      }, options)
     },
     localQueue(ctx, action, params, options) {
       return this.queue(ctx, this.name, action, params, options)
@@ -99,14 +102,15 @@ module.exports = {
         const job = await this.job(id)
         if (job && job.name) {
           event.unshift(job.name)
-          const { meta, parentCtx } = job.data	
-          meta.job = { id: job.id, queue: this.name }	
-          emitOpts = { meta, parentCtx }
+          const { meta, parentSpan } = job.data
+          meta.job = { id: job.id, queue: this.name }
+          emitOpts = { meta, parentSpan }
         }
         params = params || {}
         params.id = id
       }
       const name = event.join('.')
+      
       this.broker.emit(`${this.name}.${name}`, params, emitOpts)
       this.broker.emit(name, params, this.name, { ...emitOpts, groups: this.name})
     }
