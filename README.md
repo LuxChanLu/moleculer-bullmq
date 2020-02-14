@@ -48,19 +48,6 @@ module.exports = {
 The `client` option goes to the `IORedis` constructor.
 ```
 
-By default it doesnt pass context from queue() to worker :
-```js
-module.exports = {
-  name: 'jobs',
-  mixins: [BullMqMixin],
-  settings: {
-    bullmq: {
-      passContext: true
-    }
-  }
-}
-```
-with this the parentCtx can be used to identify the parent (in tracing)
 ## How to queue job
 You can use the `queue` method, with five parameters : Current context, Queue name, Action name, Parameters, Job options
 ```js
