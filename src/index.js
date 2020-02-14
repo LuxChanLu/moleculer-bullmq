@@ -6,7 +6,6 @@
 
 'use strict'
 
-const { Context } = require('moleculer')
 const { Worker, Queue, QueueEvents } = require('bullmq')
 const IORedis = require('ioredis')
 
