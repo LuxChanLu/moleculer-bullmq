@@ -32,7 +32,7 @@ module.exports = {
       this.$worker = new Worker(this.name, async job => {
         const { params, meta, parentCtx } = job.data
         meta.job = { id: job.id, queue: this.name }
-        return Context.create(this.broker, undefined, params, { meta, timeout: 0, parentCtx }).call(`${this.name}.${job.name}`, params)
+        return this.broker.call(`${this.name}.${job.name}`, params, { meta, timeout: 0, parentCtx })
       }, { ...this.settings.bullmq.worker, client: this.$client })
       this.$events = new QueueEvents(this.name, { client: this.$client })
       this.$events.on('active', ({ jobId }) => this.$transformEvent(jobId, 'active'))
@@ -95,17 +95,21 @@ module.exports = {
     },
     async $transformEvent (id, type, params) {
       const event = arguments.length === 1 ? [id] : [type]
+      let emitOpts = { meta: { job: { queue: this.name } } }
       if (arguments.length >= 2 && id) {
         const job = await this.job(id)
         if (job && job.name) {
           event.unshift(job.name)
+          const { meta, parentCtx } = job.data	
+          meta.job = { id: job.id, queue: this.name }	
+          emitOpts = { meta, parentCtx }
         }
         params = params || {}
         params.id = id
       }
       const name = event.join('.')
-      this.broker.emit(`${this.name}.${name}`, params)
-      this.broker.emit(name, params, this.name)
+      this.broker.emit(`${this.name}.${name}`, params, emitOpts)
+      this.broker.emit(name, params, this.name, { ...emitOpts, groups: this.name})
     }
   }
 }
