@@ -7,7 +7,6 @@
 'use strict'
 
 const { Worker, Queue, QueueEvents } = require('bullmq')
-const IORedis = require('ioredis')
 
 module.exports = {
   settings: {
@@ -23,7 +22,7 @@ module.exports = {
   created() {
     this.$queues = Object.entries(this.schema.actions || {}).filter(([, { queue }]) => queue).map(([name]) => name)
     this.$queueResolved = {}
-    this.$client = this.settings.bullmq.client ? new IORedis(this.settings.bullmq.client) : this.broker.cacher.client
+    this.$connection = this.settings.bullmq.client ? this.settings.bullmq.client : this.broker.cacher.client.options
   },
   started() {
     if (this.$queues.length > 0) {
@@ -31,8 +30,8 @@ module.exports = {
         const { params, meta, parentSpan } = job.data
         meta.job = { id: job.id, queue: this.name }
         return this.broker.call(`${this.name}.${job.name}`, params, { meta, timeout: 0, parentSpan })
-      }, { ...this.settings.bullmq.worker, client: this.$client })
-      this.$events = new QueueEvents(this.name, { client: this.$client })
+      }, { ...this.settings.bullmq.worker, connection: this.$connection })
+      this.$events = new QueueEvents(this.name, { connection: this.$connection })
       this.$events.on('active', ({ jobId }) => this.$transformEvent(jobId, 'active'))
       this.$events.on('removed', ({ jobId }) => this.$transformEvent(jobId, 'removed'))
       this.$events.on('progress', ({ jobId, data }) => this.$transformEvent(jobId, 'progress', { progress: data }))
@@ -57,7 +56,7 @@ module.exports = {
   methods: {
     $resolve(name) {
       if (!this.$queueResolved[name]) {
-        this.$queueResolved[name] = new Queue(name, { client: this.$client })
+        this.$queueResolved[name] = new Queue(name, { connection: this.$connection })
       }
       return this.$queueResolved[name]
     },
@@ -110,7 +109,7 @@ module.exports = {
         params.id = id
       }
       const name = event.join('.')
-      
+
       this.broker.emit(`${this.name}.${name}`, params, emitOpts)
       this.broker.emit(name, params, this.name, { ...emitOpts, groups: this.name})
     }
