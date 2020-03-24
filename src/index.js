@@ -111,7 +111,7 @@ module.exports = {
       const name = event.join('.')
 
       this.broker.emit(`${this.name}.${name}`, params, emitOpts)
-      this.broker.emit(name, params, this.name, { ...emitOpts, groups: this.name})
+      this.broker.emit(name, params, this.name, { ...emitOpts, groups: this.name })
     }
   }
 }
