@@ -6,7 +6,7 @@
 
 'use strict'
 
-const { Worker, Queue, QueueEvents } = require('bullmq')
+const { Worker, Queue, QueueScheduler, QueueEvents } = require('bullmq')
 
 module.exports = {
   settings: {
@@ -56,6 +56,8 @@ module.exports = {
   methods: {
     $resolve(name) {
       if (!this.$queueResolved[name]) {
+        // Adding QueueScheduler to support delayed jobs as described here https://docs.bullmq.io/guide/jobs/delayed
+        new QueueScheduler(name, { connection: this.$connection })
         this.$queueResolved[name] = new Queue(name, { connection: this.$connection })
       }
       return this.$queueResolved[name]
