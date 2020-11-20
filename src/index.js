@@ -6,7 +6,7 @@
 
 'use strict'
 
-const { Worker, Queue, QueueEvents } = require('bullmq')
+const { Worker, Queue, QueueScheduler, QueueEvents } = require('bullmq')
 
 module.exports = {
   settings: {
@@ -22,6 +22,7 @@ module.exports = {
   created() {
     this.$queues = Object.entries(this.schema.actions || {}).filter(([, { queue }]) => queue).map(([name]) => name)
     this.$queueResolved = {}
+    this.$queueSchedulers = {}
     this.$connection = this.settings.bullmq.client ? this.settings.bullmq.client : this.broker.cacher.client.options
   },
   started() {
@@ -56,6 +57,9 @@ module.exports = {
   methods: {
     $resolve(name) {
       if (!this.$queueResolved[name]) {
+        // Adding QueueScheduler to support delayed jobs as described here https://docs.bullmq.io/guide/jobs/delayed
+        // Queue schedulers are stored to avoid being garbage collected. Not used anywhere else.
+        this.$queueSchedulers[name] = new QueueScheduler(name, { connection: this.$connection })
         this.$queueResolved[name] = new Queue(name, { connection: this.$connection })
       }
       return this.$queueResolved[name]
