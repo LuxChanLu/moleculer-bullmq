@@ -27,12 +27,12 @@ module.exports = {
   },
   started() {
     if (this.$queues.length > 0) {
-      this.$worker = new Worker(this.name, async job => {
+      this.$worker = new Worker(this.$queueName(), async job => {
         const { params, meta, parentSpan } = job.data
-        meta.job = { id: job.id, queue: this.name }
-        return this.broker.call(`${this.name}.${job.name}`, params, { meta, timeout: 0, parentSpan })
+        meta.job = { id: job.id, queue: this.$queueName() }
+        return this.broker.call(`${this.$queueName()}.${job.name}`, params, { meta, timeout: 0, parentSpan })
       }, { ...this.settings.bullmq.worker, connection: this.$connection })
-      this.$events = new QueueEvents(this.name, { connection: this.$connection })
+      this.$events = new QueueEvents(this.$queueName(), { connection: this.$connection })
       this.$events.on('active', ({ jobId }) => this.$transformEvent(jobId, 'active'))
       this.$events.on('removed', ({ jobId }) => this.$transformEvent(jobId, 'removed'))
       this.$events.on('progress', ({ jobId, data }) => this.$transformEvent(jobId, 'progress', { progress: data }))
@@ -55,6 +55,12 @@ module.exports = {
     await Promise.all(Object.values(this.$queueResolved).map(queue => queue.close()))
   },
   methods: {
+    $queueName() {
+      if (this.version != null && !(this.settings || {}).$noVersionPrefix) {
+        return `v${this.version}.${this.name}`
+      }
+      return this.name
+    },
     $resolve(name) {
       if (!this.$queueResolved[name]) {
         // Adding QueueScheduler to support delayed jobs as described here https://docs.bullmq.io/guide/jobs/delayed
@@ -86,27 +92,27 @@ module.exports = {
       }, options)
     },
     localQueue(ctx, action, params, options) {
-      return this.queue(ctx, this.name, action, params, options)
+      return this.queue(ctx, this.$queueName(), action, params, options)
     },
     job(name, id) {
       if (arguments.length === 1) {
         id = name
-        name = this.name
+        name = this.$queueName()
       }
       return this.$resolve(name).getJob(id)
     },
-    async $populateJob (ctx) {
+    async $populateJob(ctx) {
       ctx.locals.job = ctx.meta && ctx.meta.job ? await this.job(ctx.meta.job.queue, ctx.meta.job.id) : undefined
     },
-    async $transformEvent (id, type, params) {
+    async $transformEvent(id, type, params) {
       const event = arguments.length === 1 ? [id] : [type]
-      let emitOpts = { meta: { job: { queue: this.name } } }
+      let emitOpts = { meta: { job: { queue: this.$queueName() } } }
       if (arguments.length >= 2 && id) {
         const job = await this.job(id)
         if (job && job.name) {
           event.unshift(job.name)
           const { meta, parentSpan } = job.data
-          meta.job = { id: job.id, queue: this.name }
+          meta.job = { id: job.id, queue: this.$queueName() }
           emitOpts = { meta, parentSpan }
         }
         params = params || {}
@@ -114,8 +120,8 @@ module.exports = {
       }
       const name = event.join('.')
 
-      this.broker.emit(`${this.name}.${name}`, params, emitOpts)
-      this.broker.emit(name, params, this.name, { ...emitOpts, groups: this.name })
+      this.broker.emit(`${this.$queueName()}.${name}`, params, emitOpts)
+      this.broker.emit(name, params, this.$queueName(), { ...emitOpts, groups: this.$queueName() })
     }
   }
 }
