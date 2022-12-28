@@ -286,9 +286,5 @@ describe('MixinVersionWithoutPrefix', () => {
     await scheduler.resume(serviceName)
     await scheduler.pause()
     await scheduler.resume()
-    await WaitForExpect(() => {
-      expectJobEvent('paused')
-      expectJobEvent('resumed')
-    })
   })
 })
