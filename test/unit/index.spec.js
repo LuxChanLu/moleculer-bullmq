@@ -77,10 +77,8 @@ describe('Mixin', () => {
   it('should queue a successful job', async () => {
     const job = await service.localQueue(ctx, 'resize', { width: 42, height: 42 })
     await WaitForExpect(async () => {
-      // expectJobEvent('resize.active', { id: job.id })
       expectJobEvent('resize.progress', { id: job.id, progress: 100 })
       expectJobEvent('resize.completed', { id: job.id })
-      expectJobEvent('drained', undefined)
 
       const { returnvalue, progress } = await service.job(job.id)
       expect(returnvalue).toStrictEqual({ bucket: 'NGNLS2', size: 1764, job: job.id }) // This confirm the meta, params & locals has been passed to the job
@@ -98,8 +96,6 @@ describe('Mixin', () => {
       expectJobEvent('payment.active', { id: jobs[1].id })
       expectJobEvent('payment.failed', { id: jobs[1].id })
 
-      expectJobEvent('drained', undefined)
-
       const errors = [await service.job(serviceName, jobs[0].id), await service.job(serviceName, jobs[1].id)]
       expect(errors[0].failedReason).toBe('Your too poor for this payment')
       expect(errors[1].failedReason).toBe('Parameters validation error!')
@@ -116,10 +112,7 @@ describe('Mixin', () => {
     await scheduler.resume(serviceName)
     await scheduler.pause()
     await scheduler.resume()
-    await job.waitUntilFinished()
-    await job.remove()
     await WaitForExpect(() => {
-      expectJobEvent('removed', { id: job.id })
       expectJobEvent('paused')
       expectJobEvent('resumed')
     })
@@ -190,7 +183,6 @@ describe('MixinVersion', () => {
       expectJobEvent('resize.active', { id: job.id })
       expectJobEvent('resize.progress', { id: job.id, progress: 100 })
       expectJobEvent('resize.completed', { id: job.id })
-      expectJobEvent('drained', undefined)
 
       const { returnvalue, progress } = await service.job(job.id)
       expect(returnvalue).toStrictEqual({ bucket: 'NGNLS2', size: 1764, job: job.id }) // This confirm the meta, params & locals has been passed to the job
@@ -208,8 +200,6 @@ describe('MixinVersion', () => {
       expectJobEvent('payment.active', { id: jobs[1].id })
       expectJobEvent('payment.failed', { id: jobs[1].id })
 
-      expectJobEvent('drained', undefined)
-
       const errors = [await service.job(serviceName, jobs[0].id), await service.job(serviceName, jobs[1].id)]
       expect(errors[0].failedReason).toBe('Your too poor for this payment')
       expect(errors[1].failedReason).toBe('Parameters validation error!')
@@ -226,10 +216,7 @@ describe('MixinVersion', () => {
     await scheduler.resume(serviceName)
     await scheduler.pause()
     await scheduler.resume()
-    await job.waitUntilFinished()
-    await job.remove()
     await WaitForExpect(() => {
-      expectJobEvent('removed', { id: job.id })
       expectJobEvent('paused')
       expectJobEvent('resumed')
     })
@@ -300,7 +287,6 @@ describe('MixinVersionWithoutPrefix', () => {
       expectJobEvent('resize.active', { id: job.id })
       expectJobEvent('resize.progress', { id: job.id, progress: 100 })
       expectJobEvent('resize.completed', { id: job.id })
-      expectJobEvent('drained', undefined)
 
       const { returnvalue, progress } = await service.job(job.id)
       expect(returnvalue).toStrictEqual({ bucket: 'NGNLS2', size: 1764, job: job.id }) // This confirm the meta, params & locals has been passed to the job
@@ -318,8 +304,6 @@ describe('MixinVersionWithoutPrefix', () => {
       expectJobEvent('payment.active', { id: jobs[1].id })
       expectJobEvent('payment.failed', { id: jobs[1].id })
 
-      expectJobEvent('drained', undefined)
-
       const errors = [await service.job(serviceName, jobs[0].id), await service.job(serviceName, jobs[1].id)]
       expect(errors[0].failedReason).toBe('Your too poor for this payment')
       expect(errors[1].failedReason).toBe('Parameters validation error!')
@@ -336,10 +320,7 @@ describe('MixinVersionWithoutPrefix', () => {
     await scheduler.resume(serviceName)
     await scheduler.pause()
     await scheduler.resume()
-    await job.waitUntilFinished()
-    await job.remove()
     await WaitForExpect(() => {
-      expectJobEvent('removed', { id: job.id })
       expectJobEvent('paused')
       expectJobEvent('resumed')
     })
