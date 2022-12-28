@@ -101,22 +101,6 @@ describe('Mixin', () => {
       expect(errors[1].failedReason).toBe('Parameters validation error!')
     })
   })
-
-  // it('should emit misc events', async () => {
-  //   emitSpy.mockClear()
-  //   const job = await ctx.call('jobs.report.generate')
-  //   expect(job).toBeDefined()
-  //   await service.pause()
-  //   await service.resume()
-  //   await scheduler.pause(serviceName)
-  //   await scheduler.resume(serviceName)
-  //   await scheduler.pause()
-  //   await scheduler.resume()
-  //   await WaitForExpect(() => {
-  //     expectJobEvent('paused')
-  //     expectJobEvent('resumed')
-  //   })
-  // })
 })
 
 describe('MixinVersion', () => {
@@ -205,22 +189,6 @@ describe('MixinVersion', () => {
       expect(errors[1].failedReason).toBe('Parameters validation error!')
     })
   })
-
-  it('should emit misc events', async () => {
-    emitSpy.mockClear()
-    const job = await ctx.call('v1.jobs.report.generate')
-    expect(job).toBeDefined()
-    await service.pause()
-    await service.resume()
-    await scheduler.pause(serviceName)
-    await scheduler.resume(serviceName)
-    await scheduler.pause()
-    await scheduler.resume()
-    await WaitForExpect(() => {
-      expectJobEvent('paused')
-      expectJobEvent('resumed')
-    })
-  })
 })
 
 describe('MixinVersionWithoutPrefix', () => {
@@ -307,22 +275,6 @@ describe('MixinVersionWithoutPrefix', () => {
       const errors = [await service.job(serviceName, jobs[0].id), await service.job(serviceName, jobs[1].id)]
       expect(errors[0].failedReason).toBe('Your too poor for this payment')
       expect(errors[1].failedReason).toBe('Parameters validation error!')
-    })
-  })
-
-  it('should emit misc events', async () => {
-    emitSpy.mockClear()
-    const job = await ctx.call('jobs.report.generate')
-    expect(job).toBeDefined()
-    await service.pause()
-    await service.resume()
-    await scheduler.pause(serviceName)
-    await scheduler.resume(serviceName)
-    await scheduler.pause()
-    await scheduler.resume()
-    await WaitForExpect(() => {
-      expectJobEvent('paused')
-      expectJobEvent('resumed')
     })
   })
 })
