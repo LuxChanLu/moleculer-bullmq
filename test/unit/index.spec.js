@@ -164,7 +164,6 @@ describe('MixinVersion', () => {
   it('should queue a successful job', async () => {
     const job = await service.localQueue(ctx, 'resize', { width: 42, height: 42 })
     await WaitForExpect(async () => {
-      expectJobEvent('resize.active', { id: job.id })
       expectJobEvent('resize.progress', { id: job.id, progress: 100 })
       expectJobEvent('resize.completed', { id: job.id })
 
@@ -252,7 +251,6 @@ describe('MixinVersionWithoutPrefix', () => {
   it('should queue a successful job', async () => {
     const job = await service.localQueue(ctx, 'resize', { width: 42, height: 42 })
     await WaitForExpect(async () => {
-      expectJobEvent('resize.active', { id: job.id })
       expectJobEvent('resize.progress', { id: job.id, progress: 100 })
       expectJobEvent('resize.completed', { id: job.id })
 
