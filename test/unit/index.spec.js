@@ -60,7 +60,7 @@ describe('Mixin', () => {
   })
   const ctx = service.currentContext = Context.create(broker, undefined, undefined, { meta: { bucket: 'NGNLS2' } })
   const emitSpy = jest.spyOn(broker, 'emit')
-  const scheduler = broker.createService({ name: 'scheduler', mixins: [BullMqMixin] }) // Try without actions
+  broker.createService({ name: 'scheduler', mixins: [BullMqMixin] }) // Try without actions
 
   const serviceName = getServiceName(service)
 
@@ -147,7 +147,7 @@ describe('MixinVersion', () => {
 
   const ctx = service.currentContext = Context.create(broker, undefined, undefined, { meta: { bucket: 'NGNLS2' } })
   const emitSpy = jest.spyOn(broker, 'emit')
-  const scheduler = broker.createService({ name: 'scheduler', mixins: [BullMqMixin] }) // Try without actions
+  broker.createService({ name: 'scheduler', mixins: [BullMqMixin] }) // Try without actions
 
   const serviceName = getServiceName(service)
 
@@ -273,6 +273,22 @@ describe('MixinVersionWithoutPrefix', () => {
       const errors = [await service.job(serviceName, jobs[0].id), await service.job(serviceName, jobs[1].id)]
       expect(errors[0].failedReason).toBe('Your too poor for this payment')
       expect(errors[1].failedReason).toBe('Parameters validation error!')
+    })
+  })
+  
+  it('should emit misc events', async () => {
+    emitSpy.mockClear()
+    const job = await ctx.call('jobs.report.generate')
+    expect(job).toBeDefined()
+    await service.pause()
+    await service.resume()
+    await scheduler.pause(serviceName)
+    await scheduler.resume(serviceName)
+    await scheduler.pause()
+    await scheduler.resume()
+    await WaitForExpect(() => {
+      expectJobEvent('paused')
+      expectJobEvent('resumed')
     })
   })
 })
