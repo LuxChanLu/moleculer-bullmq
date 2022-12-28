@@ -4,7 +4,6 @@ on: [push]
 
 jobs:
   coverage:
-    name: Coverage
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -17,9 +16,8 @@ jobs:
           node-version: 18.x
           cache: 'npm'
 
-      - run: |
-          npm ci
-          npm run test -- --forceExit --coverage
+      - run: npm ci
+      - run: npm run test -- --forceExit --coverage
 
       - uses: coverallsapp/github-action@master
         with:
