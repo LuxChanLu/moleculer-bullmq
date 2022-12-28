@@ -79,7 +79,7 @@ describe('Mixin', () => {
   it('should queue a successful job', async () => {
     const job = await service.localQueue(ctx, 'resize', { width: 42, height: 42 })
     await WaitForExpect(async () => {
-      expectJobEvent('resize.active', { id: job.id })
+      // expectJobEvent('resize.active', { id: job.id })
       expectJobEvent('resize.progress', { id: job.id, progress: 100 })
       expectJobEvent('resize.completed', { id: job.id })
       expectJobEvent('drained', undefined)
@@ -118,6 +118,7 @@ describe('Mixin', () => {
     await scheduler.resume(serviceName)
     await scheduler.pause()
     await scheduler.resume()
+    await job.remove()
     await WaitForExpect(() => {
       expectJobEvent('removed', { id: job.id })
       expectJobEvent('paused')
@@ -161,10 +162,8 @@ describe('MixinVersion', () => {
         }
       },
       'report.generate': {
-        async handler(ctx) {
-          const job = await this.localQueue(ctx, 'resize')
-          await job.remove()
-          return job
+        handler(ctx) {
+          return this.localQueue(ctx, 'resize')
         }
       }
     }
@@ -228,6 +227,7 @@ describe('MixinVersion', () => {
     await scheduler.resume(serviceName)
     await scheduler.pause()
     await scheduler.resume()
+    await job.remove()
     await WaitForExpect(() => {
       expectJobEvent('removed', { id: job.id })
       expectJobEvent('paused')
@@ -272,10 +272,8 @@ describe('MixinVersionWithoutPrefix', () => {
         }
       },
       'report.generate': {
-        async handler(ctx) {
-          const job = await this.localQueue(ctx, 'resize')
-          await job.remove()
-          return job
+        handler(ctx) {
+          return this.localQueue(ctx, 'resize')
         }
       }
     }
