@@ -1,6 +1,6 @@
 /*
  * moleculer-bullmq
- * Copyright (c) 2020 Hugo Meyronneinc (https://github.com/Hugome/moleculer-bullmq)
+ * Copyright (c) 2022 LuxChan S.A.R.L.-S (https://github.com/LuxChanLu/moleculer-bullmq)
  * MIT Licensed
  */
 
