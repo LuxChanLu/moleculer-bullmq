@@ -102,21 +102,21 @@ describe('Mixin', () => {
     })
   })
 
-  it('should emit misc events', async () => {
-    emitSpy.mockClear()
-    const job = await ctx.call('jobs.report.generate')
-    expect(job).toBeDefined()
-    await service.pause()
-    await service.resume()
-    await scheduler.pause(serviceName)
-    await scheduler.resume(serviceName)
-    await scheduler.pause()
-    await scheduler.resume()
-    await WaitForExpect(() => {
-      expectJobEvent('paused')
-      expectJobEvent('resumed')
-    })
-  })
+  // it('should emit misc events', async () => {
+  //   emitSpy.mockClear()
+  //   const job = await ctx.call('jobs.report.generate')
+  //   expect(job).toBeDefined()
+  //   await service.pause()
+  //   await service.resume()
+  //   await scheduler.pause(serviceName)
+  //   await scheduler.resume(serviceName)
+  //   await scheduler.pause()
+  //   await scheduler.resume()
+  //   await WaitForExpect(() => {
+  //     expectJobEvent('paused')
+  //     expectJobEvent('resumed')
+  //   })
+  // })
 })
 
 describe('MixinVersion', () => {

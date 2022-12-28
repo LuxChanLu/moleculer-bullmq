@@ -2,7 +2,7 @@ name: Publish to NPM
 
 on:
   tags:
-    - '*.*.*'
+    - 'v*.*.*'
 
 jobs:
   build:
@@ -12,6 +12,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: '18.x'
+          cache: 'npm'
           registry-url: 'https://registry.npmjs.org'
       - run: npm publish
         env:

@@ -12,24 +12,21 @@ jobs:
         with:
           redis-version: '6'
 
-      - name: Use Node.js 19.x
-        uses: actions/setup-node@v3
+      - uses: actions/setup-node@v3
         with:
-          node-version: 19.x
+          node-version: 18.x
+          cache: 'npm'
 
-      - name: Publish coverage
-        run: |
+      - run: |
           npm ci
           npm run test -- --forceExit --coverage
 
-      - name: Coveralls Parallel
-        uses: coverallsapp/github-action@master
+      - uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           parallel: true
 
-      - name: Coveralls Finished
-        uses: coverallsapp/github-action@master
+      - uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           parallel-finished: true
